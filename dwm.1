@@ -1,13 +1,15 @@
 .TH DWM 1 dwm\-VERSION
 .SH NAME
-dwm \- dynamic window manager
+dwm \- dynamic window manager (fedora-dwm build)
 .SH SYNOPSIS
 .B dwm
 .RB [ \-v ]
 .SH DESCRIPTION
 dwm is a dynamic window manager for X. It manages windows in tiled, monocle
-and floating layouts. Either layout can be applied dynamically, optimising the
-environment for the application in use and the task performed.
+and floating layouts, plus several additional layouts (spiral, dwindle, deck,
+bstack, grid, and more) added by the vanitygaps patch. Either layout can be
+applied dynamically, optimising the environment for the application in use
+and the task performed.
 .P
 In tiled layouts windows are managed in a master and stacking area. The master
 area on the left contains one window by default, and the stacking area on the
@@ -18,18 +20,26 @@ moved freely. Dialog windows are always managed floating, regardless of the
 layout applied.
 .P
 Windows are grouped by tags. Each window can be tagged with one or multiple
-tags. Selecting certain tags displays all windows with these tags.
+tags. Selecting certain tags displays all windows with these tags. Layout,
+master-area count, and master-area size are remembered per tag (pertag
+patch).
 .P
 Each screen contains a small status bar which displays all available tags, the
 layout, the title of the focused window, and the text read from the root window
-name property, if the screen is focused. A floating window is indicated with an
-empty square and a maximised floating window is indicated with a filled square
-before the windows title.  The selected tags are indicated with a different
-color. The tags of the focused window are indicated with a filled square in the
-top left corner.  The tags which are applied to one or more windows are
-indicated with an empty square in the top left corner.
+name property. Unlike stock dwm, the status text is drawn on every monitor,
+not just the focused one (statusallmons patch), and supports inline color and
+drawing escape codes (status2d patch, see
+.B STATUS TEXT FORMATTING
+below). A floating window is indicated with an empty square and a maximised
+floating window is indicated with a filled square before the window's title.
+The selected tags are indicated with a different color. The tags of the
+focused window are indicated with a filled square in the top left corner. The
+tags which are applied to one or more windows are indicated with an empty
+square in the top left corner.
 .P
-dwm draws a small border around windows to indicate the focus state.
+dwm draws a border around windows to indicate the focus state; its width can
+be adjusted live (setborderpx patch). Windows in the same stack area can be
+given different relative sizes via cfact.
 .SH OPTIONS
 .TP
 .B \-v
@@ -40,127 +50,234 @@ prints version information to stderr, then exits.
 .B X root window name
 is read and displayed in the status text area. It can be set with the
 .BR xsetroot (1)
-command.
+command, or by any status bar generator (this build installs
+.BR slstatus (1)).
 .TP
 .B Button1
-click on a tag label to display all windows with that tag, click on the layout
-label toggles between tiled and floating layout.
+click on a tag label to display all windows with that tag; click on the layout
+label cycles the layout.
 .TP
 .B Button3
-click on a tag label adds/removes all windows with that tag to/from the view.
+click on a tag label adds/removes all windows with that tag to/from the view;
+right-click on the layout label jumps to the spiral layout.
 .TP
-.B Mod1\-Button1
+.B Super\-Button1
 click on a tag label applies that tag to the focused window.
 .TP
-.B Mod1\-Button3
+.B Super\-Button3
 click on a tag label adds/removes that tag to/from the focused window.
 .SS Keyboard commands
+MOD refers to the Super (Windows) key; ALT refers to Alt. The full list below
+is also kept as plain text in
+.I keybinds.txt
+in the repository root, symlinked to
+.I ~/.config/dwm/keybinds.txt
+by install.sh and viewable at any time with MOD+space.
 .TP
-.B Mod1\-Shift\-Return
-Start
-.BR st(1).
+.B MOD\-Return
+Spawn a terminal (kitty).
 .TP
-.B Mod1\-p
+.B MOD\-Shift\-Return
+Open a file manager (thunar).
+.TP
+.B MOD\-d
 Spawn
-.BR dmenu(1)
+.BR dmenu (1)
 for launching other programs.
 .TP
-.B Mod1\-,
-Focus previous screen, if any.
+.B MOD\-space
+Show the keybind reference (keybinds.txt) in a terminal.
 .TP
-.B Mod1\-.
-Focus next screen, if any.
+.B MOD\-s
+Take a screenshot (flameshot).
 .TP
-.B Mod1\-Shift\-,
-Send focused window to previous screen, if any.
+.B MOD\-b
+Launch a browser (brave).
 .TP
-.B Mod1\-Shift\-.
-Send focused window to next screen, if any.
+.B MOD\-m
+Launch a browser (mullvad-browser).
 .TP
-.B Mod1\-b
-Toggles bar on and off.
+.B MOD\-t
+Launch a GTK theme switcher (lxappearance).
 .TP
-.B Mod1\-t
-Sets tiled layout.
+.B MOD\-w / MOD\-Shift\-w
+Next / previous wallpaper.
 .TP
-.B Mod1\-f
-Sets floating layout.
+.B MOD\-ALT\-Shift\-l
+Lock the screen (slock).
 .TP
-.B Mod1\-m
-Sets monocle layout.
+.B MOD\-x
+Open the power/logout menu.
 .TP
-.B Mod1\-space
-Toggles between current and previous layout.
+.B MOD\-,
+Focus previous monitor, if any.
 .TP
-.B Mod1\-j
+.B MOD\-.
+Focus next monitor, if any.
+.TP
+.B MOD\-Shift\-,
+Send focused window to previous monitor, if any.
+.TP
+.B MOD\-Shift\-.
+Send focused window to next monitor, if any.
+.TP
+.B MOD\-ALT\-1
+Set tile layout.
+.TP
+.B MOD\-ALT\-2
+Set floating layout.
+.TP
+.B MOD\-ALT\-3
+Set monocle layout.
+.TP
+.B MOD\-ALT\-4
+Set centered-master layout.
+.TP
+.B MOD\-ALT\-5
+Set bottom-stack layout.
+.TP
+.B MOD\-ALT\-6
+Set grid layout.
+.TP
+.B MOD\-ALT\-7
+Set spiral layout.
+.TP
+.B MOD\-j
 Focus next window.
 .TP
-.B Mod1\-k
+.B MOD\-k
 Focus previous window.
 .TP
-.B Mod1\-i
+.B MOD\-Shift\-j
+Move focused window down the stack, swapping it with the next client.
+.TP
+.B MOD\-Shift\-k
+Move focused window up the stack, swapping it with the previous client.
+.TP
+.B MOD\-i
 Increase number of windows in master area.
 .TP
-.B Mod1\-d
+.B MOD\-Shift\-d
 Decrease number of windows in master area.
 .TP
-.B Mod1\-l
+.B MOD\-l
 Increase master area size.
 .TP
-.B Mod1\-h
+.B MOD\-h
 Decrease master area size.
 .TP
-.B Mod1\-Return
-Zooms/cycles focused window to/from master area (tiled layouts only).
+.B MOD\-Shift\-l
+Grow focused window's share of its stack area (cfact).
 .TP
-.B Mod1\-Shift\-c
+.B MOD\-Shift\-h
+Shrink focused window's share of its stack area (cfact).
+.TP
+.B MOD\-Shift\-o
+Reset focused window's cfact to the default.
+.TP
+.B MOD\-ALT\-u
+Increase all gaps.
+.TP
+.B MOD\-ALT\-Shift\-u
+Decrease all gaps.
+.TP
+.B MOD\-ALT\-g
+Toggle gaps on/off.
+.TP
+.B MOD\-ALT\-Shift\-g
+Reset gaps to the configured default.
+.TP
+.B MOD\-Shift\-bracketleft
+Decrease border width.
+.TP
+.B MOD\-Shift\-bracketright
+Increase border width.
+.TP
+.B MOD\-Shift\-BackSpace
+Reset border width to the configured default.
+.TP
+.B MOD\-q
 Close focused window.
 .TP
-.B Mod1\-Shift\-f
-Toggle fullscreen for focused window.
+.B MOD\-Shift\-f
+Toggle real fullscreen for the focused window (as opposed to the bar-hiding
+monocle-layout trick stock dwm uses).
 .TP
-.B Mod1\-Shift\-space
+.B MOD\-Shift\-space
 Toggle focused window between tiled and floating state.
 .TP
-.B Mod1\-Tab
-Toggles to the previously selected tags.
+.B MOD\-Shift\-z
+Un-float every visible floating window on the current tag and retile them.
 .TP
-.B Mod1\-Shift\-[1..n]
+.B MOD\-Tab
+Toggles to the previously selected tag(s).
+.TP
+.B MOD\-Left / MOD\-Right
+Cycle the view to the previous / next tag.
+.TP
+.B MOD\-Shift\-[1..9]
 Apply nth tag to focused window.
 .TP
-.B Mod1\-Shift\-0
-Apply all tags to focused window.
-.TP
-.B Mod1\-Control\-Shift\-[1..n]
+.B MOD\-Control\-Shift\-[1..9]
 Add/remove nth tag to/from focused window.
 .TP
-.B Mod1\-[1..n]
+.B MOD\-[1..9]
 View all windows with nth tag.
 .TP
-.B Mod1\-0
-View all windows with any tag.
-.TP
-.B Mod1\-Control\-[1..n]
+.B MOD\-Control\-[1..9]
 Add/remove all windows with nth tag to/from the view.
 .TP
-.B Mod1\-Shift\-q
+.B MOD\-Shift\-q
 Quit dwm.
+.TP
+.B XF86AudioRaiseVolume / XF86AudioLowerVolume / XF86AudioMute
+Adjust volume via
+.BR pamixer (1).
 .SS Mouse commands
 .TP
-.B Mod1\-Button1
-Move focused window while dragging. Tiled windows will be toggled to the floating state.
+.B MOD\-Button1
+Move focused window while dragging. In a tiled layout, dragging onto another
+tiled client swaps their positions instead of floating the window
+(tiledmove patch); dragging a floating window moves it freely.
 .TP
-.B Mod1\-Button2
+.B MOD\-Button2
 Toggles focused window between floating and tiled state.
 .TP
-.B Mod1\-Button3
-Resize focused window while dragging. Tiled windows will be toggled to the floating state.
+.B MOD\-Button3
+Resize focused window while dragging; the pointer stays where you grabbed it
+instead of warping to the window's corner (resizehere patch).
+.SH STATUS TEXT FORMATTING
+The status2d patch lets a status text generator (such as
+.BR slstatus (1))
+embed inline formatting codes in the root window name, delimited by
+.BR ^ ... ^ :
+.TP
+.B ^c#RRGGBB^
+Set the foreground (text) color.
+.TP
+.B ^b#RRGGBB^
+Set the background color.
+.TP
+.B ^d^
+Reset foreground/background to the default status color scheme.
+.TP
+.B ^r\fIx\fB,\fIy\fB,\fIw\fB,\fIh\fB^
+Draw a filled rectangle at the given offset/size within the status area.
+.TP
+.B ^f\fIn\fB^
+Advance the horizontal draw position by \fIn\fR pixels without drawing
+anything.
 .SH CUSTOMIZATION
-dwm is customized by creating a custom config.h and (re)compiling the source
-code. This keeps it fast, secure and simple.
+dwm is customized by editing config.def.h and (re)compiling the source code
+(run
+.B make && sudo make install
+from the repository root). This keeps it fast, secure and simple. See
+install.sh for a scripted Fedora setup, and README for the list of patches
+this build carries on top of stock dwm.
 .SH SEE ALSO
 .BR dmenu (1),
-.BR st (1)
+.BR slstatus (1),
+.BR kitty (1)
 .SH ISSUES
 Java applications which use the XToolkit/XAWT backend may draw grey windows
 only. The XToolkit/XAWT backend breaks ICCCM-compliance in recent JDK 1.5 and early
@@ -176,4 +293,5 @@ or
 XToolkit/XAWT backend can recognize) or when using OpenJDK setting the environment variable
 .BR _JAVA_AWT_WM_NONREPARENTING=1 .
 .SH BUGS
-Send all bug reports with a patch to hackers@suckless.org.
+This is a personal fork; file issues at the fedora-dwm repository rather than
+upstream suckless.org unless you've reproduced them against vanilla dwm.

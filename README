@@ -1,48 +1,100 @@
-dwm - dynamic window manager
-============================
-dwm is an extremely fast, small, and dynamic window manager for X.
+fedora-dwm
+==========
+A personal dwm build for Fedora. Forked from suckless dwm 6.8, with a set of
+patches ported over (and where needed, fixed up) from a previous personal
+build, plus a Fedora-native install script.
+
+
+Patches
+-------
+On top of stock dwm:
+
+- pertag         - layout, mfact, nmaster and showbar are remembered per tag
+- vanitygaps     - adjustable gaps, plus extra layouts (spiral, dwindle, deck,
+                    bstack, bstackhoriz, grid, nrowgrid, horizgrid,
+                    gaplessgrid, centeredmaster, centeredfloatingmaster)
+- cfact          - per-client size ratio within a stack area (woven into
+                    vanitygaps' layout math, not a separate file)
+- movestack      - swap the focused client with the next/previous one in the
+                    stack, instead of only cycling focus
+- shiftview      - cycle the view to the next/previous tag
+- statusallmons  - status bar text is drawn on every monitor, not just the
+                    focused one
+- status2d       - inline ^c/^b/^d/^r/^f color and drawing escape codes in
+                    the status text, plus configurable bar padding
+- setborderpx    - adjust border width live, from a keybind
+- resizehere     - the pointer stays where you grabbed it when resizing with
+                    the mouse, instead of warping to the window corner
+- tiledmove      - dragging a tiled window onto another tiled window swaps
+                    their positions instead of floating it
+- unfloatvisible - re-tile every floating window on the current tag
+- alwayscenter   - floating windows spawn centered (offset for the bar)
+- actualfullscreen - MOD+Shift+f properly fullscreens a window, instead of
+                    the bar-hiding monocle-layout trick stock dwm uses; also
+                    supports a fullscreen-on-spawn rule in config.def.h
+
+See dwm.1 for the full keybind list, or keybinds.txt for a plain-text
+version (also viewable at any time inside dwm with MOD+space).
 
 
 Requirements
 ------------
-In order to build dwm you need the Xlib header files.
+Fedora (or an RHEL-family distro with dnf). In order to build dwm you need
+the Xlib header files - install.sh handles this and everything else below.
 
 
 Installation
 ------------
-Edit config.mk to match your local setup (dwm is installed into
-the /usr/local namespace by default).
+    git clone https://github.com/zythros/fedora-dwm
+    cd fedora-dwm
+    ./install.sh
 
-Afterwards enter the following command to build and install dwm (if
-necessary as root):
+This installs build dependencies, the JetBrains Mono Nerd Font, dwm itself,
+the patched dmenu fork (zythros/dmenu, needed for centered dmenu),
+slstatus (zythros/slstatus), and the archlinux-logout power menu (MOD+x) -
+then generates a session entry so display managers can start dwm directly,
+or sets up ~/.xinitrc for startx.
+
+install.sh deliberately does *not* install personal-preference applications
+(terminal, file manager, screenshot tool, locker, browsers, etc.) - install
+whichever of those you actually want yourself; every keybind that shells out
+to one is guarded so a missing binary is a no-op, not a crash. See
+config.def.h's keys[] array for exactly what's spawned where.
+
+To build/install dwm by itself, without the rest of install.sh:
 
     make clean install
+
+Edit config.mk first if you need to change install paths (defaults to the
+/usr/local namespace).
 
 
 Running dwm
 -----------
-Add the following line to your .xinitrc to start dwm using startx:
+Add the following line to your ~/.xinitrc to start dwm using startx
+(install.sh does this for you):
 
     exec dwm
 
-In order to connect dwm to a specific display, make sure that
-the DISPLAY environment variable is set correctly, e.g.:
+In order to connect dwm to a specific display, make sure the DISPLAY
+environment variable is set correctly, e.g.:
 
     DISPLAY=foo.bar:1 exec dwm
-
-(This will start dwm on display :1 of the host foo.bar.)
-
-In order to display status info in the bar, you can do something
-like this in your .xinitrc:
-
-    while xsetroot -name "`date` `uptime | sed 's/.*,//'`"
-    do
-    	sleep 1
-    done &
-    exec dwm
 
 
 Configuration
 -------------
-The configuration of dwm is done by creating a custom config.h
-and (re)compiling the source code.
+The configuration of dwm is done by editing config.def.h and
+(re)compiling:
+
+    make && sudo make install
+
+Color theme lives in themes/theme.h.
+
+
+Credits
+-------
+Upstream: https://git.suckless.org/dwm
+Patches: https://dwm.suckless.org/patches/
+Design reference (keybindings, patch selection, theme): a previous personal
+dwm build, adapted and in places corrected for this Fedora build.
