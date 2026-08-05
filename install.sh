@@ -399,8 +399,10 @@ fi
 [ -x "$HOME/.dwm/autostart.sh" ] && "$HOME/.dwm/autostart.sh" &
 
 # Start dwm (loop allows restart without logout)
+# Absolute path: don't rely on the display manager's session PATH including
+# /usr/local/bin.
 while true; do
-    dwm 2>/dev/null
+    /usr/local/bin/dwm 2>/dev/null
     [ $? -eq 0 ] && break
 done
 EOF
