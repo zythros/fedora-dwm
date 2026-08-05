@@ -86,6 +86,7 @@ typedef struct Client Client;
 struct Client {
 	char name[256];
 	float mina, maxa;
+	float cfact;
 	int x, y, w, h;
 	int oldx, oldy, oldw, oldh;
 	int basew, baseh, incw, inch, maxw, maxh, minw, minh, hintsvalid;
@@ -206,6 +207,7 @@ static void scan(void);
 static int sendevent(Client *c, Atom proto);
 static void sendmon(Client *c, Monitor *m);
 static void setborderpx(const Arg *arg);
+static void setcfact(const Arg *arg);
 static void setclientstate(Client *c, long state);
 static void setfocus(Client *c);
 static void setfullscreen(Client *c, int fullscreen);
@@ -213,6 +215,7 @@ static void setlayout(const Arg *arg);
 static void setmfact(const Arg *arg);
 static void setup(void);
 static void seturgent(Client *c, int urg);
+static void shiftview(const Arg *arg);
 static void showhide(Client *c);
 static void spawn(const Arg *arg);
 static void tag(const Arg *arg);
@@ -1195,6 +1198,7 @@ manage(Window w, XWindowAttributes *wa)
 	c->w = c->oldw = wa->width;
 	c->h = c->oldh = wa->height;
 	c->oldbw = wa->border_width;
+	c->cfact = 1.0;
 
 	updatetitle(c);
 	if (XGetTransientForHint(dpy, w, &trans) && (t = wintoclient(trans))) {
@@ -1667,6 +1671,25 @@ setborderpx(const Arg *arg)
 				resize(c, c->x, c->y, c->w - 2 * (borderpx - prev_borderpx), c->h - 2 * (borderpx - prev_borderpx), 0);
 		}
 	}
+	arrange(selmon);
+}
+
+void
+setcfact(const Arg *arg)
+{
+	float f;
+	Client *c;
+
+	c = selmon->sel;
+
+	if (!arg || !c || !selmon->lt[selmon->sellt]->arrange)
+		return;
+	f = arg->f + c->cfact;
+	if (arg->f == 0.0)
+		f = 1.0;
+	else if (f < 0.25 || f > 4.0)
+		return;
+	c->cfact = f;
 	arrange(selmon);
 }
 
@@ -2291,6 +2314,27 @@ updatewmhints(Client *c)
 			c->neverfocus = 0;
 		XFree(wmh);
 	}
+}
+
+void
+shiftview(const Arg *arg)
+{
+	Arg shifted;
+	unsigned int tagmask = 0;
+	unsigned int curtags = selmon->tagset[selmon->seltags];
+	int i;
+
+	/* count tags */
+	for (i = 0; i < LENGTH(tags); i++)
+		tagmask |= (1 << i);
+
+	if (arg->i > 0) { /* next tag */
+		shifted.ui = (curtags << 1) | (curtags >> (LENGTH(tags) - 1));
+	} else { /* prev tag */
+		shifted.ui = (curtags >> 1) | (curtags << (LENGTH(tags) - 1));
+	}
+	shifted.ui &= tagmask;
+	view(&shifted);
 }
 
 void

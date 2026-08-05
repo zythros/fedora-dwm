@@ -1,0 +1,71 @@
+fedora-dwm keybindings
+=======================
+MOD = Super (Windows key)
+ALT = Alt
+
+-- Launch --
+MOD + d              app launcher (dmenu)
+MOD + Return          terminal (kitty)
+MOD + Shift + Return   file manager (thunar)
+MOD + s               screenshot (flameshot)
+MOD + b               browser (brave)
+MOD + m               browser (mullvad)
+MOD + t               theme switcher (lxappearance)
+MOD + w / Shift+w      next / prev wallpaper
+MOD + ALT + Shift + l  lock screen (slock)
+MOD + x               power/logout menu
+MOD + space           show this keybind list
+
+-- Windows --
+MOD + j / k            focus next / prev window
+MOD + Shift + j / k     move window down / up the stack
+MOD + q               close focused window
+MOD + Shift + space     toggle floating
+MOD + Shift + z         un-float all visible windows
+MOD + Shift + f         toggle actual fullscreen
+MOD + Shift + [ / ]     decrease / increase border width
+MOD + Shift + BackSpace reset border width
+MOD + i               increase clients in master area
+MOD + Shift + d         decrease clients in master area
+MOD + h / l             decrease / increase master area size (mfact)
+MOD + Shift + h / l      shrink / grow focused client in its stack (cfact)
+MOD + Shift + o         reset cfact for focused client
+
+-- Layouts (MOD+ALT+number) --
+MOD + ALT + 1          tile
+MOD + ALT + 2          floating
+MOD + ALT + 3          monocle
+MOD + ALT + 4          centered master
+MOD + ALT + 5          bottom stack
+MOD + ALT + 6          grid
+MOD + ALT + 7          spiral
+
+-- Gaps --
+MOD + ALT + u / Shift+u  increase / decrease all gaps
+MOD + ALT + g            toggle gaps on/off
+MOD + ALT + Shift + g    reset gaps to config default
+
+-- Tags / monitors --
+MOD + [1-9]            view tag
+MOD + Ctrl + [1-9]      toggle view tag
+MOD + Shift + [1-9]     move window to tag
+MOD + Ctrl+Shift+[1-9]  toggle window on tag
+MOD + Tab              view previous tag
+MOD + Left / Right       cycle tag left / right
+MOD + , / .              focus prev / next monitor
+MOD + Shift + , / .      move window to prev / next monitor
+
+-- System --
+MOD + Shift + q         quit dwm
+XF86 volume keys        raise / lower / mute (pamixer)
+
+Note: there is no bar-toggle keybind in this config (stock dwm's MOD+b became
+the browser launcher instead). Add one back if you want it.
+
+-- Mouse --
+MOD + left-click drag on window     move (tiled clients swap positions)
+MOD + right-click drag on window    resize
+MOD + middle-click on window        toggle floating
+click on layout symbol              cycle layout
+right-click on layout symbol        jump to spiral layout
+middle-click on window title        zoom/promote focused window to master
